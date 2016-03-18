@@ -1,7 +1,6 @@
 package hxLine.terminal;
 import haxe.Utf8;
 
-typedef KeyStroke = Array<Int>;
 class UnixKeyMap{
     // the mac key-map
     public static var keyMap:Map<String, String> = [

@@ -8,79 +8,60 @@
  *   You must not remove this notice, or any other, from this software.
  **/
 package hxLine;
-
-import hxLine.terminal.ITerminal;
-import hxLine.terminal.UnixKeyMap;
+import hxLine.terminal.*;
+import hxLine.terminal.TerminalLogic;
 using StringTools;
 import Lambda;
 
-
-typedef KeyStroke = Array<Int>;
-
 class HxLine {
     private var output:Dynamic;
-    private var terminal:ITerminal;
-
-    public function new(output:Dynamic) {
-        this.output = output;
-        terminal = new hxLine.terminal.XTERM_VT100(output);
-    }
+    public function new(output:Dynamic) { this.output = output; }
+    function readChar() return Sys.getChar(false);
+    function print(msg) this.output.writeString(msg);
+    function println(msg) this.print(msg+"\n");
 
     public function readline(prompt:String, ?echo:Bool=true):String {
-        var charints:KeyStroke = [];
-        var previous_status = { buffer: "",
-                                prompt: prompt,
-                                cursorPos: 0,
-                                echoes: echo}
-        terminal.print(prompt);
+        var current_status = TerminalLogic.newStatus(prompt);
+        this.print(prompt);
         while (true) {
-            terminal = new hxLine.terminal.XTERM_VT100(this.output, previous_status);
-            var r = this.readKeyStroke();
-
-            // move back the cursor temporary
-            var left = [27,91,68].map(String.fromCharCode).join("");
-            for (i in 0...(previous_status.prompt.length + previous_status.buffer.length)) terminal.print(left);
-
-            if (r.length == 0) continue;
-            if (r.length == 1 && r[0] == 13) break;
-            charints = charints.concat(r);
-            var potential_action = charints.toString();
-
-            previous_status = if (terminal.Stroke2Action.exists(potential_action))
-                                    terminal.Stroke2Action.get(potential_action)();
-                              else {
-                                  var new_state = terminal.status;
-                                  new_state.buffer = new_state.buffer + to_str(r);
-                                  new_state;
-                              };
-            terminal.print(previous_status.prompt + previous_status.buffer);
-            ////var left = [27,91,68].map(String.fromCharCode).join("");
-            ////for (i in 0...(previous_status.prompt.length + previous_status.buffer.length)) terminal.print(left);
-            //terminal.print(previous_status.prompt + previous_status.buffer);
-            //terminal.cursorBegin();
+            var previous_status = Reflect.copy(current_status);
+            // Read single keyStroke and translate it to an action with the terminal Code Table
+            var action:Actions = VT220.translate(this.readKeyStroke());
+            // Apply ending actions or actions with side effects
+            switch(action) {
+                case Enter: break; // return with what it was in the buffer
+                case Cancel: return "";
+                case Clean: { VT220.clean(output);
+                              this.print(prompt + current_status.buffer); };
+                case Bell: VT220.bell(output);
+                case Backspace if (current_status.cursorPos == 0): VT220.bell(output);
+                case CursorLeft if (current_status.cursorPos == 0): VT220.bell(output);
+                case CursorRight if (current_status.cursorPos == current_status.buffer.length): VT220.bell(output);
+                default: true; //pass
+            }
+            current_status = switch(action) {
+                case NewChar(char): TerminalLogic.addChar(char, previous_status);
+                case CursorLeft: TerminalLogic.cursorLeft(previous_status);
+                case CursorRight: TerminalLogic.cursorRight(previous_status);
+                case CursorEnd: TerminalLogic.cursorEnd(previous_status);
+                case CursorBegining: TerminalLogic.cursorBeginning(previous_status);
+                // To be implemented
+                case KillRight | KillLeft |CursorUp | CursorDown | Backspace: previous_status;
+                // Type system r00lz
+                default: Reflect.copy(previous_status);
+                //case Escape | Ignore | Enter | Cancel | Clean | Bell: previous_status;
+            }
+            // Repaint the terminal and move the cursor to its new position
+            for (i in 0...previous_status.cursorPos+previous_status.prompt.length) VT220.left(output);
+            this.print(current_status.prompt + current_status.buffer);
+            for (i in 0...(current_status.buffer.length - current_status.cursorPos)) VT220.left(output);
         }
-        terminal.println(prompt + previous_status.buffer);
-        return previous_status.buffer;
-    }
-    public static inline function to_str(m:Array<Int>):String {
-        return m.map(String.fromCharCode).join("");
+        this.print('\n');
+        return current_status.buffer;
     }
 
     public function readKeyStroke():KeyStroke {
-        var charints:KeyStroke = new Array<Int>();
-        while(true) {
-            charints.push(terminal.readChar());
-            if (UnixKeyMap.keyMap.exists(charints.toString())) break;
-            else if (charints[0] == 27) continue;
-            else {
-                if (Lambda.exists(UnixKeyMap.keyMap,
-                        function (strokeChain):Bool { return strokeChain.toString().startsWith(charints.toString().substr(-1));})) {
-                    continue;
-                }
-                break;
-            }
-        }
-        return charints;
+        return [this.readChar()];
     }
 }
 
