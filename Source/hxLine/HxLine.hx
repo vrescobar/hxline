@@ -29,14 +29,13 @@ class HxLine {
             var action:Actions = VT220.translate(this.readKeyStroke());
             // Apply ending actions or actions with side effects
             switch(action) {
-                case Enter: break; // return with what it was in the buffer
+                case Enter: break; // return what was in the buffer
                 case Cancel: return "";
-                case Clean: { VT220.clean(output);
-                              this.print(prompt + current_status.buffer); };
-                case Bell: VT220.bell(output);
-                case Backspace if (current_status.cursorPos == 0): VT220.bell(output);
-                case CursorLeft if (current_status.cursorPos == 0): VT220.bell(output);
-                case CursorRight if (current_status.cursorPos == current_status.buffer.length): VT220.bell(output);
+                case Clean: { VT220.clean(output); this.print(prompt + current_status.buffer); };
+                case Bell: { VT220.bell(output); continue; }
+                case Backspace if (current_status.cursorPos == 0): { VT220.bell(output); continue;}
+                case CursorLeft if (current_status.cursorPos == 0): { VT220.bell(output); continue;}
+                case CursorRight if (current_status.cursorPos == current_status.buffer.length): { VT220.bell(output); continue;}
                 default: true; //pass
             }
             current_status = switch(action) {
@@ -47,8 +46,9 @@ class HxLine {
                 case CursorBegining: TerminalLogic.cursorBeginning(previous_status);
                 case KillLeft: TerminalLogic.killLeft(previous_status);
                 case KillRight: TerminalLogic.killRight(previous_status);
+                case Backspace: TerminalLogic.backspace(previous_status);
                 // To be implemented
-                case CursorUp | CursorDown | Backspace: previous_status;
+                case CursorUp | CursorDown : previous_status;
                 // Type system r00lz
                 default: Reflect.copy(previous_status);
                 //case Escape | Ignore | Enter | Cancel | Clean | Bell: previous_status;

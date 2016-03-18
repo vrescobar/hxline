@@ -45,4 +45,10 @@ class TerminalLogic {
         s2.buffer = status.buffer.substr(0,status.cursorPos);
         return s2;
     }
+    static inline public function backspace(status:LineStatus):LineStatus {
+        var s2 = status.copy();
+        s2.buffer = status.buffer.substr(0, status.cursorPos - 1) + status.buffer.substr(status.cursorPos);
+        s2.cursorPos = status.cursorPos - 1;
+        return s2;
+    }
 }
