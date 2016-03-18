@@ -45,13 +45,17 @@ class HxLine {
                 case CursorRight: TerminalLogic.cursorRight(previous_status);
                 case CursorEnd: TerminalLogic.cursorEnd(previous_status);
                 case CursorBegining: TerminalLogic.cursorBeginning(previous_status);
+                case KillLeft: TerminalLogic.killLeft(previous_status);
+                case KillRight: TerminalLogic.killRight(previous_status);
                 // To be implemented
-                case KillRight | KillLeft |CursorUp | CursorDown | Backspace: previous_status;
+                case CursorUp | CursorDown | Backspace: previous_status;
                 // Type system r00lz
                 default: Reflect.copy(previous_status);
                 //case Escape | Ignore | Enter | Cancel | Clean | Bell: previous_status;
             }
-            // Repaint the terminal and move the cursor to its new position
+            // Repaint the terminal and move the cursor to its new position. NOTE: it does not worth to optimize yet
+            for (i in 0...previous_status.cursorPos+previous_status.prompt.length) VT220.left(output);
+            for (i in 0...previous_status.cursorPos+previous_status.prompt.length) this.print(" ");
             for (i in 0...previous_status.cursorPos+previous_status.prompt.length) VT220.left(output);
             this.print(current_status.prompt + current_status.buffer);
             for (i in 0...(current_status.buffer.length - current_status.cursorPos)) VT220.left(output);

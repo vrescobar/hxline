@@ -2,7 +2,6 @@ import Sys;
 import haxe.Utf8;
 using StringTools;
 import hxLine.HxLine;
-import hxLine.terminal.XTERM_VT100;
 
 class Main {
     static function main2() {

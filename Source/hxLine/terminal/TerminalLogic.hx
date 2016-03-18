@@ -34,4 +34,15 @@ class TerminalLogic {
         s2.cursorPos = status.buffer.length;
         return s2;
     }
+    static inline public function killLeft(status:LineStatus):LineStatus {
+        var s2 = status.copy();
+        s2.cursorPos = 0;
+        s2.buffer = status.buffer.substr(status.cursorPos);
+        return s2;
+    }
+    static inline public function killRight(status:LineStatus):LineStatus {
+        var s2 = status.copy();
+        s2.buffer = status.buffer.substr(0,status.cursorPos);
+        return s2;
+    }
 }
