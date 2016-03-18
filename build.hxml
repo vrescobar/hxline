@@ -1,0 +1,9 @@
+-cp Source
+-cp Example
+-dce full
+-debug
+-main Main
+#-neko build/example_hxline.n
+-cpp build/cpp/
+#--no-traces
+#-cmd cp Source/eventtarget.js out/web/eventtarget.js
