@@ -9,9 +9,6 @@
  **/
 package hxLine;
 import hxLine.terminal.*;
-import hxLine.terminal.TerminalLogic;
-using StringTools;
-import Lambda;
 
 class HxLine {
     private var output:Dynamic;
@@ -24,17 +21,17 @@ class HxLine {
         var current_status = TerminalLogic.newStatus(prompt);
         this.print(prompt);
         while (true) {
-            var previous_status = Reflect.copy(current_status);
+            var previous_status = current_status;
             // Read single keyStroke and translate it to an action with the terminal Code Table
             var action:Actions = VT220.translate(this.readKeyStroke());
             // Apply ending actions or actions with side effects
             switch(action) {
-                case Enter: break; // return what was in the buffer
+                case Enter: break; // it gonna return what was already in the buffer
                 case Cancel: return "";
-                case Clean: { VT220.clean(output); this.print(prompt + current_status.buffer); };
-                case Bell: { VT220.bell(output); continue; }
-                case Backspace if (current_status.cursorPos == 0): { VT220.bell(output); continue;}
-                case CursorLeft if (current_status.cursorPos == 0): { VT220.bell(output); continue;}
+                case Clean: { VT220.clean(output); // We are at (0,0)
+                               };
+                case Bell: { VT220.bell(output); continue; } // a bell, just that
+                case Backspace | CursorLeft if (current_status.cursorPos == 0): { VT220.bell(output); continue;}
                 case CursorRight if (current_status.cursorPos == current_status.buffer.length): { VT220.bell(output); continue;}
                 default: true; //pass
             }
@@ -50,13 +47,13 @@ class HxLine {
                 // To be implemented
                 case CursorUp | CursorDown : previous_status;
                 // Type system r00lz
-                default: Reflect.copy(previous_status);
+                default: previous_status;
                 //case Escape | Ignore | Enter | Cancel | Clean | Bell: previous_status;
-            }
+            };
             // Repaint the terminal and move the cursor to its new position. NOTE: it does not worth to optimize yet
-            for (i in 0...previous_status.cursorPos+previous_status.prompt.length) VT220.left(output);
-            for (i in 0...previous_status.cursorPos+previous_status.prompt.length) this.print(" ");
-            for (i in 0...previous_status.cursorPos+previous_status.prompt.length) VT220.left(output);
+            for (i in 0...previous_status.prompt.length + previous_status.cursorPos) VT220.left(output);
+            for (i in 0...previous_status.prompt.length + previous_status.buffer.length) this.print(" ");
+            for (i in 0...previous_status.prompt.length + previous_status.buffer.length) VT220.left(output);
             this.print(current_status.prompt + current_status.buffer);
             for (i in 0...(current_status.buffer.length - current_status.cursorPos)) VT220.left(output);
         }
@@ -65,7 +62,13 @@ class HxLine {
     }
 
     public function readKeyStroke():KeyStroke {
-        return [this.readChar()];
+        var captured:Array<Int> = [];
+        while (true) {
+            captured.push(this.readChar());
+            if (captured[0] == 27 && captured.length < 3) continue;
+            break;
+        }
+        return captured;
     }
 }
 
