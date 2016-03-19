@@ -52,14 +52,26 @@ class HxLine {
                 case CursorUp | CursorDown : previous_status;
                 // Type system r00lz
                 default: previous_status;
-                //case Escape | Ignore | Enter | Cancel | Clean | Bell: previous_status;
+                //case Escape|Ignore|Enter|Cancel|Clean|Bell: previous_status;
             };
-            // Repaint the terminal and move the cursor to its new position. NOTE: it does not worth to optimize yet
-            for (i in 0...previous_status.prompt.length + previous_status.cursorPos) VT220.left(output);
-            for (i in 0...previous_status.prompt.length + previous_status.buffer.length) this.print(" ");
-            for (i in 0...previous_status.prompt.length + previous_status.buffer.length) VT220.left(output);
-            this.print(current_status.prompt + current_status.buffer);
-            for (i in 0...(current_status.buffer.length - current_status.cursorPos)) VT220.left(output);
+
+            if (previous_status.prompt != current_status.prompt||previous_status.buffer != current_status.buffer) {
+                // Repaint the whole terminal line (no further optimization yet)
+                for (i in 0...previous_status.prompt.length + previous_status.cursorPos) VT220.left(output);
+                for (i in 0...previous_status.prompt.length + previous_status.buffer.length) this.print(" ");
+                for (i in 0...previous_status.prompt.length + previous_status.buffer.length) VT220.left(output);
+                this.print(current_status.prompt + current_status.buffer);
+                // move the cursor back to its new position
+                for (i in 0...(current_status.buffer.length - current_status.cursorPos)) VT220.left(output);
+            } else if (current_status.cursorPos != previous_status.cursorPos) {
+                // If the only changed thing was the cursor position
+                if (current_status.cursorPos > previous_status.cursorPos) {
+                    for (i in 0...current_status.cursorPos - previous_status.cursorPos) VT220.right(output);
+                } else {
+                    for (i in 0... previous_status.cursorPos - current_status.cursorPos) VT220.left(output);
+                }
+            }
+
         }
         this.print('\n');
         return current_status.buffer;
