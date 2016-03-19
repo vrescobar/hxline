@@ -13,7 +13,7 @@ class VT220 {
              "[21]" => KillLeft,
              "[11]" => KillRight,
              "[12]" => Clean,
-             "[25]" => Ignore, // yank previous removed text, "ctr-y",
+             "[25]" => Yank, // yank previous removed text, "ctr-y",
              "[127]" => Backspace,
              "[27]" => Escape,
              "[13]" => Enter,

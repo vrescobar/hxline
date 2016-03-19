@@ -1,7 +1,9 @@
 import Sys;
 import haxe.Utf8;
 using StringTools;
+
 import hxLine.HxLine;
+//import hxLine.terminal.VT220;
 
 class Main {
     static function main2() {
@@ -29,28 +31,26 @@ class Main {
     }
     static function main() {
         var output = Sys.stdout();
-        //var terminal = new XTERM_VT100(output);
+        var println = function(msg) : Void { output.writeString(msg+"\n"); };
 
         var rl = new HxLine(output);
-        var help = 'Type "quit" to exit\n';
-        output.writeString(help);
+        var help = 'Type "quit" to exit';
+        println(help);
         while(true) {
             var line:String = rl.readline("$> ");
-            //terminal.println(line);
             switch (line) {
                 case "q"|"q "|"quit"|"exit": break;
                 case ""|"\n": continue;
-                //case "clean": terminal.clean();
+                case "clean": hxLine.terminal.VT220.clean(output);
                 default: {
                     var command:Array<Dynamic> = [line.split(" ")[0], line.split(" ").slice(1)] ;
                     switch command {
-                        case ["help", _]: output.writeString(help);
-                        case ["echo", to_echo]: output.writeString(to_echo.join(' '));
-                        default: output.writeString('${line}: command not found\n');
+                        case ["help", _]: println(help);
+                        case ["echo", to_echo]: println(to_echo.join(' '));
+                        default: println('${line}: command not found');
                     }
                 }
             }
         }
     }
-
 }
