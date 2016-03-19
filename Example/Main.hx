@@ -42,6 +42,7 @@ class Main {
                 case "q"|"q "|"quit"|"exit": break;
                 case ""|"\n": continue;
                 case "clean": hxLine.terminal.VT220.clean(output);
+                case "readchar": readchars(output.writeString);
                 default: {
                     var command:Array<Dynamic> = [line.split(" ")[0], line.split(" ").slice(1)] ;
                     switch command {
@@ -52,5 +53,16 @@ class Main {
                 }
             }
         }
+    }
+    static inline function readchars(print:String -> Void): Void {
+        print("Ends when pressing [ENTER]: ");
+        var char = Sys.getChar(false);
+        print("" + char);
+        while (true) {
+            char = Sys.getChar(false);
+            if (char == 13) break;
+            print(", " + char);
+        };
+        print("\n");
     }
 }
