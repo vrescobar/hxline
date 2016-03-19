@@ -29,6 +29,24 @@ class TerminalLogic {
         s2.cursorPos = 0;
         return s2;
     }
+    static inline public function cursorWordLeft(status:LineStatus):LineStatus {
+        var s2 = status.copy();
+        var after_blank = ~/[" "]+[^" "]/g;
+        var last_valid = 0;
+        // I am not sure about respecting the inmutability so I work on a copy
+        after_blank.map(status.buffer.toString(), function(r) {
+            var found_position:Int = r.matchedPos().pos + r.matchedPos().len - 1;
+            if (found_position < status.cursorPos) last_valid = found_position;
+            return r.matched(0);
+        });
+        s2.cursorPos = last_valid;
+        return s2;
+    }
+
+    static inline public function cursorWordRight(status:LineStatus):LineStatus {
+        //trace( "right!");
+        return status;
+    }
 
     static inline public function yank(status:LineStatus):LineStatus {
         var s2 = status.copy();

@@ -3,21 +3,8 @@ import haxe.Utf8;
 using StringTools;
 
 import hxLine.HxLine;
-//import hxLine.terminal.VT220;
 
 class Main {
-    static function main2() {
-        var s:hxLine.terminal.LineStatus = {prompt: "", buffer: "", cursorPos:0, yanked:""};
-        var f = function(s:hxLine.terminal.LineStatus) {
-            var s2 = Reflect.copy(s);
-            s2.cursorPos = 9;
-            return s2;
-        }
-        trace("s0:" + s);
-        trace("s2:" + f(s));
-        trace("s1:" + s);
-
-    }
     static function readcharmap() {
         //Sys.println(Utf8.decode("Reading your keymap, please follow the next instructions:"));
         //var km:Map<String,hxLine.terminal.UnixKeyMap.KeyStroke> = hxLine.terminal.UnixKeyMap.read_keyMap(Sys.println);
@@ -31,8 +18,8 @@ class Main {
     }
     static function main() {
         var output = Sys.stdout();
-        var println = function(msg) : Void { output.writeString(msg+"\n"); };
 
+        var println = function(msg) : Void { output.writeString(msg+"\n"); };
         var rl = new HxLine(output);
         var help = 'Type "quit" to exit';
         println(help);
@@ -45,7 +32,7 @@ class Main {
             switch (line) {
                 case "q"|"quit"|"exit": break;
                 case "clean": hxLine.terminal.VT220.clean(output);
-                case "readchar": readchars(output.writeString);
+                case "readchar": readchars(output.writeString, Sys.getChar);
                 default: {
                     // complex commands:
                     var command:Array<Dynamic> = [line.split(" ")[0], line.split(" ").slice(1)] ;
@@ -58,12 +45,12 @@ class Main {
             }
         }
     }
-    static inline function readchars(print:String -> Void): Void {
+    static inline function readchars(print:String -> Void, getChar:Bool -> Int): Void {
         print("Ends when pressing [ENTER]: ");
-        var char = Sys.getChar(false);
+        var char = getChar(false);
         print("" + char);
         while (true) {
-            char = Sys.getChar(false);
+            char = getChar(false);
             if (char == 13) break;
             print(", " + char);
         };

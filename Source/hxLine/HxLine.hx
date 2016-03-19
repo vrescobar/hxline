@@ -45,6 +45,8 @@ class HxLine {
                 case CursorBegining: TerminalLogic.cursorBeginning(previous_status);
                 case KillLeft: TerminalLogic.killLeft(previous_status);
                 case KillRight: TerminalLogic.killRight(previous_status);
+                case CursorWordLeft: TerminalLogic.cursorWordLeft(previous_status);
+                case CursorWordRight: TerminalLogic.cursorWordRight(previous_status);
                 case Yank: TerminalLogic.yank(previous_status);
                 // To be implemented
                 case CursorUp | CursorDown : previous_status;
@@ -63,11 +65,16 @@ class HxLine {
         return current_status.buffer;
     }
 
-    public function readKeyStroke():KeyStroke {
+    public function readKeyStroke(?AllowEscapeChars:Bool=true):KeyStroke {
         var captured:Array<Int> = [];
         while (true) {
             captured.push(this.readChar());
-            if (captured[0] == 27 && captured.length < 3) continue;
+            if (AllowEscapeChars||captured[0] != 27) {
+                switch(captured.toString()) {
+                    case "[27,102]"|"[27,98]": break;
+                }
+                if (captured[0] == 27 && captured.length < 3) continue;
+            }
             break;
         }
         return captured;
