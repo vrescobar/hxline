@@ -9,6 +9,7 @@ class VT220 {
              "[27,91,67]" => CursorRight,
              "[27,91,68]" => CursorLeft,
              "[1]" => CursorBegining,
+             "[4]" => Eof,
              "[5]" => CursorEnd,
              "[21]" => KillLeft,
              "[11]" => KillRight,

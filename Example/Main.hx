@@ -39,8 +39,8 @@ class Main {
         while(true) {
             var line:String = rl.readline("$> ");
             switch (line) {
-                case "q"|"q "|"quit"|"exit": break;
-                case ""|"\n": continue;
+                case "q"|"\n"|"quit"|"exit": break;
+                case "": continue;
                 case "clean": hxLine.terminal.VT220.clean(output);
                 case "readchar": readchars(output.writeString);
                 default: {

@@ -28,6 +28,8 @@ class HxLine {
             switch(action) {
                 case Enter: break; // it gonna return what was already in the buffer
                 case Cancel: return "";
+                case Eof if (current_status.buffer.length == 0): return '\n';
+                case Eof if (current_status.buffer.length < 0): continue; // I don't like that
                 case Clean: { VT220.clean(output); }; // Back to (0,0)
                 case Bell: { VT220.bell(output); continue; } // a bell, just that
                 case Backspace | CursorLeft if (current_status.cursorPos == 0): { VT220.bell(output); continue;}
