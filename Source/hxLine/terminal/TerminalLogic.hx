@@ -34,7 +34,7 @@ class TerminalLogic {
         var after_blank = ~/[" "]+[^" "]/g;
         var last_valid = 0;
         // I am not sure about respecting the inmutability so I work on a copy
-        after_blank.map(status.buffer.toString(), function(r) {
+        after_blank.map(new String.String(status.buffer), function(r) {
             var found_position:Int = r.matchedPos().pos + r.matchedPos().len - 1;
             if (found_position < status.cursorPos) last_valid = found_position;
             return r.matched(0);
@@ -44,8 +44,17 @@ class TerminalLogic {
     }
 
     static inline public function cursorWordRight(status:LineStatus):LineStatus {
-        //trace( "right!");
-        return status;
+        var s2 = status.copy();
+        var blank_after = ~/[^" "]+[" "]/g;
+        var min_valid = status.buffer.length;
+        // It way MUCH easier to work only after the cursor :)
+        blank_after.map(status.buffer.substr(status.cursorPos), function(r) {
+            var found_position:Int = r.matchedPos().pos + r.matchedPos().len + status.cursorPos - 1;
+            if (found_position < min_valid) min_valid = found_position;
+            return r.matched(0);
+        });
+        s2.cursorPos = min_valid;
+        return s2;
     }
 
     static inline public function yank(status:LineStatus):LineStatus {
