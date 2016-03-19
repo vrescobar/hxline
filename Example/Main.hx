@@ -38,12 +38,16 @@ class Main {
         println(help);
         while(true) {
             var line:String = rl.readline("$> ");
+            // Special cases:
+            if (line.charCodeAt(0) == 0x0) { println("exit"); break; }
+            if (line.trim().length == 0) continue;
+            // Commands:
             switch (line) {
-                case "q"|"\n"|"quit"|"exit": break;
-                case "": continue;
+                case "q"|"quit"|"exit": break;
                 case "clean": hxLine.terminal.VT220.clean(output);
                 case "readchar": readchars(output.writeString);
                 default: {
+                    // complex commands:
                     var command:Array<Dynamic> = [line.split(" ")[0], line.split(" ").slice(1)] ;
                     switch command {
                         case ["help", _]: println(help);
