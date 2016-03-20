@@ -27,7 +27,7 @@ class HxLine {
             // Apply ending actions or actions wich have side effects
             switch(action) {
                 case Enter: break; // it gonna return what was already in the buffer
-                case Cancel: return "";
+                case Cancel: println(""); // The logic will restart the buffer
                 case Eof if (current_status.buffer.length == 0): return String.fromCharCode(0x0);
                 case Eof: { VT220.bell(output); continue;} // Not allowed
                 case Clean: { VT220.clean(output); }; // Back to (0,0)
@@ -38,6 +38,7 @@ class HxLine {
             }
             current_status = switch(action) {
                 case NewChar(char): TerminalLogic.addChar(char, previous_status);
+                case Cancel: TerminalLogic.cancel(previous_status);
                 case Backspace: TerminalLogic.backspace(previous_status);
                 case CursorLeft: TerminalLogic.cursorLeft(previous_status);
                 case CursorRight: TerminalLogic.cursorRight(previous_status);

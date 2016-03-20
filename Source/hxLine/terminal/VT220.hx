@@ -12,6 +12,7 @@ class VT220 {
              "[27,102]" => CursorWordRight,
              "[1]" => CursorBegining,
              "[4]" => Eof,
+             "[3]" => Cancel, // c-C
              "[9]" => Ignore, // Tab
              "[5]" => CursorEnd,
              "[21]" => KillLeft,

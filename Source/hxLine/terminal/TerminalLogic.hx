@@ -91,4 +91,10 @@ class TerminalLogic {
         s2.cursorPos = status.cursorPos - 1;
         return s2;
     }
+    static inline public function cancel(status:LineStatus):LineStatus {
+        var s2 = status.copy();
+        s2.buffer = "";
+        s2.cursorPos = 0;
+        return s2;
+    }
 }
