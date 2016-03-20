@@ -3,6 +3,17 @@ import haxe.Utf8;
 
 class UnixKeyMap{
     // the mac key-map
+    static function readcharmap() {
+        //Sys.println(Utf8.decode("Reading your keymap, please follow the next instructions:"));
+        //var km:Map<String,hxLine.terminal.UnixKeyMap.KeyStroke> = hxLine.terminal.UnixKeyMap.read_keyMap(Sys.println);
+        /*var s = new haxe.Serializer();
+        s.serialize(km);
+        Sys.println(s.toString());
+        Sys.println("And now directly:");*/
+        //Sys.println(haxe.Json.stringify(km));
+        //Sys.println("Bell " + "\x0F");
+        //trace(haxe.Json.stringify(hxLine.terminal.UnixKeyMap.read_keyMap(Sys.println)));
+    }
     public static var keyMap:Map<String, String> = [
          "[27,91,66]" => "down",
          "[27,91,65]" => "up",

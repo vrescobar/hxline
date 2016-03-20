@@ -6,24 +6,12 @@ import hxLine.HxLine;
 import hxLine.terminal.VT220;
 
 class Main {
-    static function readcharmap() {
-        //Sys.println(Utf8.decode("Reading your keymap, please follow the next instructions:"));
-        //var km:Map<String,hxLine.terminal.UnixKeyMap.KeyStroke> = hxLine.terminal.UnixKeyMap.read_keyMap(Sys.println);
-        /*var s = new haxe.Serializer();
-        s.serialize(km);
-        Sys.println(s.toString());
-        Sys.println("And now directly:");*/
-        //Sys.println(haxe.Json.stringify(km));
-        //Sys.println("Bell " + "\x0F");
-        //trace(haxe.Json.stringify(hxLine.terminal.UnixKeyMap.read_keyMap(Sys.println)));
-    }
     static private var help = 'Type "quit" to exit';
     static function main() {
         var output = Sys.stdout();
         var terminal = new VT220(function(){ return Sys.getChar(false); },
                                  output.writeString);
         var rl = new HxLine(terminal);
-
         terminal.println(help);
         while(true) {
             var line:String = rl.readline("$> ");
@@ -35,6 +23,7 @@ class Main {
                 case "q"|"quit"|"exit": break;
                 case "clean": terminal.clean();
                 case "readchar": readchars(output.writeString, Sys.getChar);
+                case "passwd": askpwd(terminal, rl);
                 default: {
                     // complex commands:
                     var command:Array<Dynamic> = [line.split(" ")[0], line.split(" ").slice(1)] ;
@@ -46,6 +35,10 @@ class Main {
                 }
             }
         }
+    }
+    static public function askpwd(terminal:VT220, rl:HxLine) {
+        var pass = rl.readpasswd("Introduce an example of password (it will be printed)\npasswd: ");
+        terminal.println("here comes your password: " + pass);
     }
     static inline function readchars(print:String -> Void, getChar:Bool -> Int): Void {
         print("Ends when pressing [ENTER]: ");
