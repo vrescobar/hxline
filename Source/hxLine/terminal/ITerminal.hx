@@ -2,20 +2,16 @@
 package hxLine.terminal;
 
 interface ITerminal {
-    public var Stroke2Action:Map<String, Void -> Dynamic>;
-    public var status:LineStatus;
-    public function readChar():Int;
-    public function print(msg:String):LineStatus;
-    public function println(msg:String):LineStatus;
-    public function clean():LineStatus;
-    public function cancel():LineStatus;
-    public function bell():LineStatus;
-    public function left():LineStatus;
-    public function right():LineStatus;
-    public function cursorBegin():LineStatus;
-    public function cursorEnd():LineStatus;
-    //public var history:IHistory;
-    //public function name():String;
-    //public function name():String;
-    //public function name():String;
+    public function readChar():Int; // blocking read a char / KeyStroke
+    public function print(msg:String):Void;
+    public function printNL():Void; // The creation of a new line
+    public function println(msg:String):Void; // Prints msg and newline
+    public function getAction():Actions;
+    public function clean():Void; // clean && moe cursor to 0,0
+    public function bell():Void;
+    public function up():Void;
+    public function down():Void;
+    public function right():Void;
+    public function left():Void;
+    public function render_status(previous_status:LineStatus, current_status:LineStatus): Void;
 }
