@@ -1,6 +1,6 @@
 package hxLine.terminal;
 
-typedef LineStatus =  {
+typedef HxLineState =  {
           var prompt:String;
           var buffer:String;
           var cursorPos:Int;

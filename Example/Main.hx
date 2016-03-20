@@ -24,6 +24,7 @@ class Main {
                 case "clean": terminal.clean();
                 case "readchar": readchars(output.writeString, Sys.getChar);
                 case "passwd": askpwd(terminal, rl);
+                case "recordTC": recordTC(terminal, rl);
                 default: {
                     // complex commands:
                     var command:Array<Dynamic> = [line.split(" ")[0], line.split(" ").slice(1)] ;
@@ -35,6 +36,18 @@ class Main {
                 }
             }
         }
+    }
+    static public function recordTC(terminal:VT220, rl:HxLine) {
+        terminal.println("This demo shows how all internal state, key by key, is tracked and recorded.");
+
+        var options = Reflect.copy(rl.options);
+        var logging_system = new Array<Dynamic>();
+
+        options.prompt = "(recording)";
+        options.logStatus = logging_system.push;
+
+        HxLine.hxReadline(options);
+        terminal.println("Done:\n" + logging_system.join('\n'));
     }
     static public function askpwd(terminal:VT220, rl:HxLine) {
         var pass = rl.readpasswd("Introduce an example of password (it will be printed)\npasswd: ");

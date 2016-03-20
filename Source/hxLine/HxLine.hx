@@ -10,13 +10,16 @@
 package hxLine;
 import hxLine.terminal.Actions;
 import hxLine.terminal.ITerminal;
+import hxLine.terminal.HxLineState;
 import hxLine.terminal.TerminalLogic;
+
 
 typedef HxLineOptions = {
                             var activeBell:Bool;
-                            var echoes:Bool; // when deactivated, it breaks the clean
+                            var echoes:Bool; // when deactivated, clean can't work
                             var allowClean:Bool;
                             var terminal:ITerminal;
+                            @:optional var logStatus:Dynamic; // Function where the state comes as firts paramenter
                             @:optional var prompt:String;
                             @:optional var notAllowed:Void -> Void;
                         }
@@ -26,7 +29,7 @@ class HxLine {
     public function new(terminal:ITerminal) {
         this.options = { terminal: terminal,
                          activeBell: true,
-                         echoes: true, // breaks the clean!
+                         echoes: true,
                          allowClean: true
                         };
     }
@@ -43,16 +46,19 @@ class HxLine {
         var newOpts = Reflect.copy(this.options);
         newOpts.prompt = prompt;
         newOpts.echoes = false;
-        newOpts.allowClean = false;
+        // newOpts.allowClean = false; // It will be anyway deactivated
         return hxReadline(newOpts);
     }
 
     public static function hxReadline(options:HxLineOptions):String {
         /* hxReadline with several options as input parameter */
+
+        // Optional options with their defaults:
         if (!Reflect.hasField(options, "prompt")) options.prompt = "HxLine>";
         if (!Reflect.hasField(options, "notAllowed")) options.notAllowed = function() if (options.activeBell) options.terminal.bell();
-
-        var current_status = TerminalLogic.newStatus(options.prompt);
+        var logStatus = if (Reflect.hasField(options, "logStatus")) options.logStatus else function(l:HxLineState){};
+        // Initialize and start looping
+        var current_status:HxLineState = TerminalLogic.newStatus(options.prompt);
         options.terminal.print(options.prompt);
         while (true) {
             var previous_status = current_status;
@@ -64,7 +70,7 @@ class HxLine {
                 case Cancel: options.terminal.printNL(); // The rest will restart the buffer
                 case Eof if (current_status.buffer.length == 0): return String.fromCharCode(0x0);
                 case Eof: { options.notAllowed(); continue; }
-                case Clean if (options.allowClean): options.terminal.clean(); // needs to re-render
+                case Clean if (options.allowClean && options.echoes): options.terminal.clean(); // needs to re-render
                 case Bell: { options.terminal.bell(); continue; } // explicitly requested
                 case Backspace | CursorLeft if (current_status.cursorPos == 0): { options.notAllowed(); continue;}
                 case CursorRight if (current_status.cursorPos == current_status.buffer.length): { options.notAllowed(); continue;}
@@ -90,8 +96,8 @@ class HxLine {
                 case Eof|Escape|Ignore|Enter|Clean|Bell: previous_status;
                 };
 
-            if (options.echoes)
-                options.terminal.render_status(previous_status, current_status);
+            if (options.echoes) options.terminal.render_status(previous_status, current_status);
+            logStatus(current_status);
         }
         options.terminal.printNL();
         return current_status.buffer;

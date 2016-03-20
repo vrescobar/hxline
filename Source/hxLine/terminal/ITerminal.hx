@@ -13,5 +13,5 @@ interface ITerminal {
     public function down():Void;
     public function right():Void;
     public function left():Void;
-    public function render_status(previous_status:LineStatus, current_status:LineStatus): Void;
+    public function render_status(previous_status:HxLineState, current_status:HxLineState): Void;
 }

@@ -62,7 +62,7 @@ class VT220 implements ITerminal {
     public function down():Void this.print(this.keyStroke_toString(([27,91,66])));
     public function right():Void this.print(this.keyStroke_toString(([27,91,67])));
     public function left():Void this.print(this.keyStroke_toString(([27,91,68])));
-    public function render_status(previous_status:LineStatus, current_status:LineStatus): Void {
+    public function render_status(previous_status:HxLineState, current_status:HxLineState): Void {
         // TODO: this optimization broke the repaint after a clean was triggered :(
         //if (previous_status.prompt != current_status.prompt||previous_status.buffer != current_status.buffer) {
             // Repaint the whole terminal line (no further optimization yet)
