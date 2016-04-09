@@ -3,45 +3,38 @@ import haxe.Utf8;
 using StringTools;
 
 import hxLine.HxLine;
-import hxLine.terminal.VT220;
+import hxLine.terminal.ITerminal;
+import hxLine.Helpers;
 
+// Let's try to create a beautyful command line!
 class Main {
+
     static private var help = 'Type "quit" to exit';
     static function main() {
-        var output = Sys.stdout();
-        var terminal = new VT220(function(){ return Sys.getChar(false); },
-                                 output.writeString);
-
+        // create a System Terminal, fully autodetected and self configured
+        var terminal = Helpers.detectTerminal();
+        // Create an autocompleter function for our commands (using a helper for the default)
+        var autocompleter = Helpers.mkAutocompleter(terminal, ["quit", "exit", "clean", "readchar", "passwd",
+                                                               "recordTC", "help", "hxLine", "echo"]);
+        // Before we start the session, print the help for the user
         terminal.println(help);
 
-        var rl = new HxLine(terminal, function (query:String) {
-                        /* input is query output is list of candidates */
-                        var list_autocomplete = ["quit", "exit", "clean", "readchar", "passwd",
-                                                 "recordTC", "help", "hxLine",
-                                                 "echo"];
-                        var suggestions = [for(str in list_autocomplete) if (str.startsWith(query)) str];
-                        if (suggestions.length > 1) {
-                            terminal.println("");
-                            terminal.println("Too many options");
-                        }
-                        return suggestions;
-                    });
-
-
-
+        // Initialize the readline reader, passing it a terminal and the autocompleter
+        var rl = new HxLine(terminal, autocompleter);
 
         while(true) {
+            // Read a line with the given prompot
             var line:String = rl.readline("$> ");
-            // Special cases:
+            // Special cases, such as a given Eof:
             if (line.charCodeAt(0) == 0x0) { terminal.println("exit"); break; }
             if (line.trim().length == 0) continue;
-            // Commands:
+            // Embedded commands that I offer in my command line:
             switch (line) {
-                case "q"|"quit"|"exit": break;
+                case "quit"|"exit": break;
                 case "clean": terminal.clean();
-                case "readchar": readchars(output.writeString, Sys.getChar);
+                case "readchar": readchars(terminal.print, Sys.getChar);
                 case "passwd": askpwd(terminal, rl);
-                case "recordTC": recordTC(terminal, rl);
+                case "recordTC": Helpers.recordTC(terminal, rl);
                 case "hxLine": terminal.println("In the Beginning... Was the Command Line");
                 default: {
                     // complex commands:
@@ -54,21 +47,10 @@ class Main {
                 }
             }
         }
+        terminal.println("bye!");
     }
 
-    static public function recordTC(terminal:VT220, rl:HxLine) {
-        terminal.println("This demo shows how all internal state, key by key, is tracked and recorded.");
-
-        var options = Reflect.copy(rl.options);
-        var logging_system = new Array<Dynamic>();
-
-        options.prompt = "(recording)";
-        options.logStatus = logging_system.push;
-
-        rl.hxReadline(options);
-        terminal.println("Done:\n" + logging_system.join('\n'));
-    }
-    static public function askpwd(terminal:VT220, rl:HxLine) {
+    static public function askpwd(terminal:ITerminal, rl:HxLine) {
         var pass = rl.readpasswd("Introduce an example of password (it will be printed)\npasswd: ");
         terminal.println("here comes your password: " + pass);
     }
@@ -83,16 +65,4 @@ class Main {
         };
         print("\n");
     }
-}
-
-class History {
-    private var arr:Array<String>;
-    function new(){
-        arr = new Array<String>();
-    }
-    function push(s:String) return arr.push(s);
-    function prev(ref):String return arr[ref-1];
-    function next(ref):String return arr[ref+1];
-    function hasNext(ref):Bool return false;
-    function hasPrev(ref):Bool return false;
 }
