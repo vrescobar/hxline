@@ -19,7 +19,7 @@ class VT220 implements ITerminal {
              "[1]" => CursorBegining,
              "[4]" => Eof,
              "[3]" => Cancel, // c-C
-             "[9]" => Ignore, // Tab
+             "[9]" => Autocomplete, // Tab
              "[5]" => CursorEnd,
              "[21]" => KillLeft,
              "[11]" => KillRight,

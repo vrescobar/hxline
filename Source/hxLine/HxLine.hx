@@ -8,6 +8,7 @@
  *   You must not remove this notice, or any other, from this software.
  **/
 package hxLine;
+using Reflect;
 import hxLine.terminal.Actions;
 import hxLine.terminal.ITerminal;
 import hxLine.terminal.HxLineState;
@@ -19,6 +20,7 @@ typedef HxLineOptions = {
                             var echoes:Bool; // when deactivated, clean can't work
                             var allowClean:Bool;
                             var terminal:ITerminal;
+                            var autocompleter:String -> Array<String>;
                             @:optional var logStatus:Dynamic; // Function where the state comes as firts paramenter
                             @:optional var prompt:String;
                             @:optional var notAllowed:Void -> Void;
@@ -26,12 +28,16 @@ typedef HxLineOptions = {
 
 class HxLine {
     public var options:HxLineOptions; // easy serialization
-    public function new(terminal:ITerminal) {
+    public function new(terminal:ITerminal, ?autocompleter:String -> Array<String>) {
         this.options = { terminal: terminal,
                          activeBell: true,
                          echoes: true,
-                         allowClean: true
+                         allowClean: true,
+                         autocompleter: if (autocompleter == null) function(s:String){return [s];}
+                                        else autocompleter
                         };
+
+
     }
 
     public function readline(prompt:String):String {
@@ -50,7 +56,7 @@ class HxLine {
         return hxReadline(newOpts);
     }
 
-    public static function hxReadline(options:HxLineOptions):String {
+    public function hxReadline(options:HxLineOptions):String {
         /* hxReadline with several options as input parameter */
 
         // Optional options with their defaults:
@@ -90,6 +96,7 @@ class HxLine {
                 case CursorWordLeft: TerminalLogic.cursorWordLeft(previous_status);
                 case CursorWordRight: TerminalLogic.cursorWordRight(previous_status);
                 case Yank: TerminalLogic.yank(previous_status);
+                case Autocomplete: this.autocompletion(previous_status);
                 // To be implemented
                 case CursorUp | CursorDown : previous_status;
                 // Type system: those are in the previous switch and I am forgot none
@@ -101,5 +108,19 @@ class HxLine {
         }
         options.terminal.printNL();
         return current_status.buffer;
+    }
+    public function autocompletion(prev_state:HxLineState):HxLineState {
+        var alternatives = this.options.autocompleter(prev_state.buffer);
+        var state = prev_state.copy();
+        switch(alternatives.length) {
+            case 0: options.terminal.bell();
+            case 1: {
+                    state.buffer = alternatives[0];
+                    state.cursorPos = state.buffer.length;
+                }
+            // default: // partial autocomplete
+        }
+
+        return state;
     }
 }

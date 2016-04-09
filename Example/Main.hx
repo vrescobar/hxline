@@ -11,8 +11,25 @@ class Main {
         var output = Sys.stdout();
         var terminal = new VT220(function(){ return Sys.getChar(false); },
                                  output.writeString);
-        var rl = new HxLine(terminal);
+
         terminal.println(help);
+
+        var rl = new HxLine(terminal, function (query:String) {
+                        /* input is query output is list of candidates */
+                        var list_autocomplete = ["quit", "exit", "clean", "readchar", "passwd",
+                                                 "recordTC", "help", "hxLine",
+                                                 "echo"];
+                        var suggestions = [for(str in list_autocomplete) if (str.startsWith(query)) str];
+                        if (suggestions.length > 1) {
+                            terminal.println("");
+                            terminal.println("Too many options");
+                        }
+                        return suggestions;
+                    });
+
+
+
+
         while(true) {
             var line:String = rl.readline("$> ");
             // Special cases:
@@ -25,6 +42,7 @@ class Main {
                 case "readchar": readchars(output.writeString, Sys.getChar);
                 case "passwd": askpwd(terminal, rl);
                 case "recordTC": recordTC(terminal, rl);
+                case "hxLine": terminal.println("In the Beginning... Was the Command Line");
                 default: {
                     // complex commands:
                     var command:Array<Dynamic> = [line.split(" ")[0], line.split(" ").slice(1)] ;
@@ -37,6 +55,7 @@ class Main {
             }
         }
     }
+
     static public function recordTC(terminal:VT220, rl:HxLine) {
         terminal.println("This demo shows how all internal state, key by key, is tracked and recorded.");
 
@@ -46,7 +65,7 @@ class Main {
         options.prompt = "(recording)";
         options.logStatus = logging_system.push;
 
-        HxLine.hxReadline(options);
+        rl.hxReadline(options);
         terminal.println("Done:\n" + logging_system.join('\n'));
     }
     static public function askpwd(terminal:VT220, rl:HxLine) {
