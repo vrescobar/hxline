@@ -65,3 +65,15 @@ class Main {
         print("\n");
     }
 }
+
+class History {
+    private var arr:Array<String>;
+    function new(){
+        arr = new Array<String>();
+    }
+    function push(s:String) return arr.push(s);
+    function prev(ref):String return arr[ref-1];
+    function next(ref):String return arr[ref+1];
+    function hasNext(ref):Bool return false;
+    function hasPrev(ref):Bool return false;
+}

@@ -61,24 +61,21 @@ class VT220 implements ITerminal {
     public function up():Void this.print(this.keyStroke_toString(([27,91,65])));
     public function down():Void this.print(this.keyStroke_toString(([27,91,66])));
     public function right():Void this.print(this.keyStroke_toString(([27,91,67])));
-    public function left():Void this.print(this.keyStroke_toString(([27,91,68])));
+    public function left(?num:Int=1):Void {
+        var command:String = "";
+        for (i in 0...num) command += this.keyStroke_toString([27,91,68]);
+        this.print(command);
+    }
     public function render_status(previous_status:HxLineState, current_status:HxLineState): Void {
-        // TODO: this optimization broke the repaint after a clean was triggered :(
-        //if (previous_status.prompt != current_status.prompt||previous_status.buffer != current_status.buffer) {
-            // Repaint the whole terminal line (no further optimization yet)
-            for (i in 0...previous_status.prompt.length + previous_status.cursorPos) this.left();
-            for (i in 0...previous_status.prompt.length + previous_status.buffer.length) this.print(" ");
-            for (i in 0...previous_status.prompt.length + previous_status.buffer.length) this.left();
+            /* Redraw the whole line *each time* (with little or no optimizations) */
+            var leq = Helpers.last_equal(previous_status.prompt + previous_status.buffer,
+                                         current_status.prompt + current_status.buffer);
+            var max_length = Std.int(Math.max(current_status.prompt.length + current_status.buffer.length,
+                                              previous_status.prompt.length + previous_status.buffer.length));
+            this.left(max_length);
             this.print(current_status.prompt + current_status.buffer);
-            // move the cursor back to its new position
-            for (i in 0...(current_status.buffer.length - current_status.cursorPos)) this.left();
-        /*} else if (current_status.cursorPos != previous_status.cursorPos) {
-            // If the only changed thing was the cursor position
-            if (current_status.cursorPos > previous_status.cursorPos) {
-                for (i in 0...current_status.cursorPos - previous_status.cursorPos) this.right();
-            } else {
-                for (i in 0... previous_status.cursorPos - current_status.cursorPos) this.left();
-            }
-        }*/
+            for(c in current_status.prompt.length + current_status.buffer.length...max_length) this.print(" ");
+            this.left(max_length - current_status.cursorPos - current_status.prompt.length);
+            return;
     }
 }

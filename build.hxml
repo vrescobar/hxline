@@ -1,10 +1,19 @@
 -cp Source
+-cp Source/test
+-dce full
+-debug
+--no-inline
+-main Main
+-neko build/tests.n
+--next
+-cmd neko build/tests.n
+
+--next
+
+-cp Source
 -cp Example
 -dce full
 -debug
 -main Main
-#-neko build/example_hxline.n
 -cpp build/cpp/
-#-java build/java/
 #--no-traces
-#-cmd cp Source/eventtarget.js out/web/eventtarget.js
