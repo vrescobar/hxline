@@ -9,6 +9,10 @@
  **/
 package hxLine;
 using Reflect;
+
+import hxLine.history.IHistory;
+import hxLine.history.BasicHistory;
+
 import hxLine.terminal.Actions;
 import hxLine.terminal.ITerminal;
 import hxLine.terminal.HxLineState;
@@ -20,21 +24,22 @@ typedef HxLineOptions = {
                             var echoes:Bool; // when deactivated, clean can't work
                             var allowClean:Bool;
                             var terminal:ITerminal;
-                            var autocompleter:String -> Array<String>;
+                            @:optional var autocompleter:String -> Array<String>;
                             @:optional var logStatus:Dynamic; // Function where the state comes as firts paramenter
                             @:optional var prompt:String;
                             @:optional var notAllowed:Void -> Void;
+                            @:optional var history:IHistory;
                         }
 
 class HxLine {
     public var options:HxLineOptions; // easy serialization
-    public function new(terminal:ITerminal, ?autocompleter:String -> Array<String>) {
+    public function new(terminal:ITerminal, ?history:IHistory, ?autocompleter:String -> Array<String>) {
         this.options = { terminal: terminal,
                          activeBell: true,
                          echoes: true,
                          allowClean: true,
-                         autocompleter: if (autocompleter == null) function(s:String){return [s];}
-                                        else autocompleter
+                         history: history,
+                         autocompleter: autocompleter,
                         };
 
 
@@ -62,6 +67,9 @@ class HxLine {
         // Optional options with their defaults:
         if (!Reflect.hasField(options, "prompt")) options.prompt = "HxLine>";
         if (!Reflect.hasField(options, "notAllowed")) options.notAllowed = function() if (options.activeBell) options.terminal.bell();
+        if (!Reflect.hasField(options, "autocompleter")||options.autocompleter == null) options.autocompleter = function(s:String){return [s];};
+        if (!Reflect.hasField(options, "history")||options.history == null) options.history = new BasicHistory();
+
         var logStatus = if (Reflect.hasField(options, "logStatus")) options.logStatus else function(l:HxLineState){};
         // Initialize and start looping
         var current_status:HxLineState = TerminalLogic.newStatus(options.prompt);
@@ -82,6 +90,9 @@ class HxLine {
                 case CursorRight if (current_status.cursorPos == current_status.buffer.length): { options.notAllowed(); continue;}
                 default: true; //pass
             }
+            // We keep in the history the current edition
+            //options.history.addEntry(current_status.buffer);
+
             // Here comes the logic update of the terminal
             current_status = switch(action) {
                 case NewChar(char): TerminalLogic.addChar(char, previous_status);
@@ -96,12 +107,14 @@ class HxLine {
                 case CursorWordLeft: TerminalLogic.cursorWordLeft(previous_status);
                 case CursorWordRight: TerminalLogic.cursorWordRight(previous_status);
                 case Yank: TerminalLogic.yank(previous_status);
-                case Autocomplete: this.autocompletion(previous_status);
-                // To be implemented
-                case CursorUp | CursorDown : previous_status;
+                case Autocomplete: autocompletion(previous_status, options);
+                case CursorUp: TerminalLogic.history_prev(previous_status, options.history);
+                case CursorDown: TerminalLogic.history_next(previous_status, options.history);
                 // Type system: those are in the previous switch and I am forgot none
                 case Eof|Escape|Ignore|Enter|Clean|Bell: previous_status;
                 };
+            // Here the history of the current line is undone
+            //options.history.pop();
 
             if (options.echoes) options.terminal.render_status(previous_status, current_status);
             logStatus(current_status);
@@ -109,8 +122,8 @@ class HxLine {
         options.terminal.printNL();
         return current_status.buffer;
     }
-    public function autocompletion(prev_state:HxLineState):HxLineState {
-        var alternatives = this.options.autocompleter(prev_state.buffer);
+    private inline static function autocompletion(prev_state:HxLineState, options:HxLineOptions):HxLineState {
+        var alternatives = options.autocompleter(prev_state.buffer);
         var state = prev_state.copy();
         switch(alternatives.length) {
             case 0: options.terminal.bell();
@@ -118,7 +131,6 @@ class HxLine {
                     state.buffer = alternatives[0];
                     state.cursorPos = state.buffer.length;
                 }
-            // default: // partial autocomplete
         }
 
         return state;

@@ -1,6 +1,9 @@
 package hxLine.terminal;
 using Reflect;
 
+import hxLine.history.IHistory;
+
+
 class TerminalLogic {
     static inline public function newStatus(?prompt:String="") {
         return {prompt: prompt,
@@ -100,6 +103,19 @@ class TerminalLogic {
         var s2 = status.copy();
         s2.buffer = "";
         s2.cursorPos = 0;
+        return s2;
+    }
+    static inline public function history_prev(status:HxLineState, history:IHistory):HxLineState {
+        var s2 = status.copy();
+        s2.buffer = history.prev();
+        s2.cursorPos = s2.buffer.length;
+        return s2;
+    }
+
+    static inline public function history_next(status:HxLineState, history:IHistory):HxLineState {
+        var s2 = status.copy();
+        s2.buffer = history.next();
+        s2.cursorPos = s2.buffer.length;
         return s2;
     }
 }

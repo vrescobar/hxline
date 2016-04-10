@@ -1,8 +1,7 @@
-
 package hxLine;
+
 using StringTools;
-import hxLine.terminal.VT220;
-import hxLine.terminal.ITerminal;
+import hxLine.terminal.*;
 /***
 Various helpers which are better tested and distributed when separated.
 ***/

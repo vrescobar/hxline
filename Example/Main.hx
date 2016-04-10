@@ -1,10 +1,10 @@
 import Sys;
-import haxe.Utf8;
 using StringTools;
 
+import hxLine.Helpers;
 import hxLine.HxLine;
 import hxLine.terminal.ITerminal;
-import hxLine.Helpers;
+import hxLine.history.BasicHistory;
 
 // Let's try to create a beautyful command line!
 class Main {
@@ -15,22 +15,27 @@ class Main {
         var terminal = Helpers.detectTerminal();
         // Create an autocompleter function for our commands (using a helper for the default)
         var autocompleter = Helpers.mkAutocompleter(terminal, ["quit", "exit", "clean", "readchar", "passwd",
-                                                               "recordTC", "help", "hxLine", "echo"]);
+                                                               "recordTC", "help", "history", "hxLine", "echo"]);
+        var history = new BasicHistory();
         // Before we start the session, print the help for the user
         terminal.println(help);
 
         // Initialize the readline reader, passing it a terminal and the autocompleter
-        var rl = new HxLine(terminal, autocompleter);
+        var rl = new HxLine(terminal, history, autocompleter);
 
         while(true) {
-            // Read a line with the given prompot
+            // Read a line with the given prompt
             var line:String = rl.readline("$> ");
             // Special cases, such as a given Eof:
             if (line.charCodeAt(0) == 0x0) { terminal.println("exit"); break; }
             if (line.trim().length == 0) continue;
+            // If the command was something looking like a command:
+            history.addEntry(line);
+
             // Embedded commands that I offer in my command line:
             switch (line) {
                 case "quit"|"exit": break;
+                case "history"|"h": terminal.println(history.dump().toString());
                 case "clean": terminal.clean();
                 case "readchar": readchars(terminal.print, Sys.getChar);
                 case "passwd": askpwd(terminal, rl);
