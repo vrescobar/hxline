@@ -1,0 +1,23 @@
+package hxLine.history;
+
+class TextHistory extends BasicHistory {
+    public var history_file:String;
+    public function new(histfile:String) {
+        history_file = histfile;
+        // read history from the given file, if failing, then empty
+        super(try {
+                    var f = sys.io.File.read(history_file);
+                    var text = f.readAll().toString();
+                    f.close();
+                    text.split("\n");
+                } catch(e:Dynamic) {
+                    [];
+                });
+    }
+    public function save() {
+        /* Write everything in a file and close it */
+        var f = sys.io.File.write(history_file);
+        f.writeString(this.toArray().join("\n"));
+        f.close();
+    }
+}

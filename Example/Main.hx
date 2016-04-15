@@ -4,7 +4,7 @@ using StringTools;
 import hxLine.Helpers;
 import hxLine.HxLine;
 import hxLine.terminal.ITerminal;
-import hxLine.history.BasicHistory;
+import hxLine.history.TextHistory;
 
 // Let's try to create a beautyful command line!
 class Main {
@@ -16,7 +16,7 @@ class Main {
         // Create an autocompleter function for our commands (using a helper for the default)
         var autocompleter = Helpers.mkAutocompleter(terminal, ["quit", "exit", "clean", "readchar", "passwd",
                                                                "recordTC", "help", "history", "hxLine", "hxline", "echo"]);
-        var history = new BasicHistory();
+        var history = new TextHistory('history.txt');
         // Before we start the session, print the help for the user
         terminal.println(help);
 
@@ -35,7 +35,7 @@ class Main {
             // Embedded commands that I offer in my command line:
             switch (line) {
                 case "quit"|"exit": break;
-                case "history"|"h": terminal.println(history.toArray().toString());
+                case "history"|"h": terminal.println(history.toArray().join("\n"));
                 case "clean": terminal.clean();
                 case "readchar": readchars(terminal.print, Sys.getChar);
                 case "passwd": askpwd(terminal, rl);
@@ -53,6 +53,7 @@ class Main {
             }
         }
         terminal.println("bye!");
+        history.save();
     }
 
     static public function askpwd(terminal:ITerminal, rl:HxLine) {

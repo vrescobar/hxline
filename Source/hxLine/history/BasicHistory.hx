@@ -11,7 +11,7 @@ class BasicHistory implements IHistory {
     public function new(?existing_history:Array<String>) {
         arr = if (existing_history != null) existing_history else new Array<String>();
         possibleBuffer = "";
-        pos = 0;
+        pos = arr.length;
     }
     public function addEntry(current:String):String {
         if (arr.length == 0) {
