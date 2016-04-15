@@ -107,14 +107,14 @@ class TerminalLogic {
     }
     static inline public function history_prev(status:HxLineState, history:IHistory):HxLineState {
         var s2 = status.copy();
-        s2.buffer = history.prev();
+        s2.buffer = history.prev(status.buffer);
         s2.cursorPos = s2.buffer.length;
         return s2;
     }
 
     static inline public function history_next(status:HxLineState, history:IHistory):HxLineState {
         var s2 = status.copy();
-        s2.buffer = history.next();
+        s2.buffer = history.next(status.buffer);
         s2.cursorPos = s2.buffer.length;
         return s2;
     }

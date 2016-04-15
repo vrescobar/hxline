@@ -15,7 +15,7 @@ class Main {
         var terminal = Helpers.detectTerminal();
         // Create an autocompleter function for our commands (using a helper for the default)
         var autocompleter = Helpers.mkAutocompleter(terminal, ["quit", "exit", "clean", "readchar", "passwd",
-                                                               "recordTC", "help", "history", "hxLine", "echo"]);
+                                                               "recordTC", "help", "history", "hxLine", "hxline", "echo"]);
         var history = new BasicHistory();
         // Before we start the session, print the help for the user
         terminal.println(help);
@@ -35,12 +35,12 @@ class Main {
             // Embedded commands that I offer in my command line:
             switch (line) {
                 case "quit"|"exit": break;
-                case "history"|"h": terminal.println(history.dump().toString());
+                case "history"|"h": terminal.println(history.toArray().toString());
                 case "clean": terminal.clean();
                 case "readchar": readchars(terminal.print, Sys.getChar);
                 case "passwd": askpwd(terminal, rl);
                 case "recordTC": Helpers.recordTC(terminal, rl);
-                case "hxLine": terminal.println("In the Beginning... Was the Command Line");
+                case "hxLine"|"hxline": terminal.println("In the Beginning... Was the Command Line");
                 default: {
                     // complex commands:
                     var command:Array<Dynamic> = [line.split(" ")[0], line.split(" ").slice(1)] ;

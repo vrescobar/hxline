@@ -113,8 +113,6 @@ class HxLine {
                 // Type system: those are in the previous switch and I am forgot none
                 case Eof|Escape|Ignore|Enter|Clean|Bell: previous_status;
                 };
-            // Here the history of the current line is undone
-            //options.history.pop();
 
             if (options.echoes) options.terminal.render_status(previous_status, current_status);
             logStatus(current_status);
