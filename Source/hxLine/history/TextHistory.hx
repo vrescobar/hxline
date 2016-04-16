@@ -1,4 +1,5 @@
 package hxLine.history;
+using StringTools;
 
 class TextHistory extends BasicHistory {
     public var history_file:String;
@@ -9,7 +10,8 @@ class TextHistory extends BasicHistory {
                     var f = sys.io.File.read(history_file);
                     var text = f.readAll().toString();
                     f.close();
-                    text.split("\n");
+                    // ignore empty lines
+                    [for (t in text.split("\n")) if (t.trim().length > 0) t];
                 } catch(e:Dynamic) {
                     [];
                 });
