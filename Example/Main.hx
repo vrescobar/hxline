@@ -5,6 +5,7 @@ import hxLine.Helpers;
 import hxLine.HxLine;
 import hxLine.terminal.ITerminal;
 import hxLine.history.TextHistory;
+import hxLine.history.IHistory;
 
 // Let's try to create a beautyful command line!
 class Main {
@@ -14,7 +15,7 @@ class Main {
         // create a System Terminal, fully autodetected and self configured
         var terminal = Helpers.detectTerminal();
         // Create an autocompleter function for our commands (using a helper for the default)
-        var autocompleter = Helpers.mkAutocompleter(terminal, ["quit", "exit", "clean", "readchar", "passwd",
+        var autocompleter = Helpers.mkAutocompleter(terminal, ["quit", "exit", "clean", "readchar", "passwd", "setMaxHistory",
                                                                "recordTC", "help", "history", "hxLine", "hxline", "echo"]);
         var history = new TextHistory('history.txt');
         // Before we start the session, print the help for the user
@@ -46,6 +47,7 @@ class Main {
                     var command:Array<Dynamic> = [line.split(" ")[0], line.split(" ").slice(1)] ;
                     switch command {
                         case ["help", _]: terminal.println(help);
+                        case ["setMaxHistory", num]: setMaxHistory(terminal, history, num[0]);
                         case ["echo", to_echo]: terminal.println(to_echo.join(' '));
                         default: terminal.println('${line}: command not found');
                     }
@@ -55,7 +57,15 @@ class Main {
         terminal.println("bye!");
         history.save();
     }
-
+    static public function setMaxHistory(terminal:ITerminal, h:IHistory, n:String)  {
+        var num = Std.parseInt(n);
+        if (num != null) {
+            h.max_length = num;
+            terminal.println('new history max: ${h.max_length}');
+        } else {
+            terminal.println("usage: setMaxHistory number");
+        }
+    }
     static public function askpwd(terminal:ITerminal, rl:HxLine) {
         var pass = rl.readpasswd("Introduce an example of password (it will be printed)\npasswd: ");
         terminal.println("here comes your password: " + pass);

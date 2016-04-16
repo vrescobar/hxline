@@ -4,6 +4,7 @@ import hxLine.history.IHistory;
 
 
 class BasicHistory implements IHistory {
+    public var max_length:Null<Int>=null;
     private var arr:Array<String>;
     private var possibleBuffer:String;
     private var pos:Int;
@@ -13,6 +14,12 @@ class BasicHistory implements IHistory {
         possibleBuffer = "";
         pos = arr.length;
     }
+    private function cut_length():Void {
+        if (max_length != null && arr.length > max_length){
+            var elems_to_remove = if (arr.length - max_length < 0) 0 else arr.length - max_length;
+            arr.splice(0, elems_to_remove);
+        }
+    }
     public function addEntry(current:String):String {
         if (arr.length == 0) {
             arr.push(current);
@@ -20,6 +27,7 @@ class BasicHistory implements IHistory {
             return current;
         }
         arr.push(current);
+        cut_length();
         pos = arr.length;
         return current;
     }
