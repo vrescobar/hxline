@@ -2,7 +2,6 @@
 package hxLine.history;
 import hxLine.history.IHistory;
 
-
 class BasicHistory implements IHistory {
     public var max_length:Null<Int>=null;
     private var arr:Array<String>;
@@ -29,6 +28,7 @@ class BasicHistory implements IHistory {
         arr.push(current);
         cut_length();
         pos = arr.length;
+        possibleBuffer = "";
         return current;
     }
     public function prev(current:String):String {
@@ -47,11 +47,38 @@ class BasicHistory implements IHistory {
         pos = pos + 1;
         var c = if (pos == arr.length) this.possibleBuffer else arr[pos];
         return c;
+    }
+    public function backwardQuery(query:String):Null<String> {
+        var querable_array = arr.copy();
+        querable_array.push(possibleBuffer);
+        var res:Null<String> = null;
+        var it = pos;
+        //if (querable_array[pos].indexOf(query) != -1) return querable_array[pos];
+        while (--it >= 0) { //Range operator can't iterate backwards
+            var possible = querable_array[it];
+            if (possible.indexOf(query) != -1){ //is substring?
+                pos = it;
+                return possible;
+                }
+        }
+        return res;
+    }
 
+    public function forwardQuery(query:String):Null<String> {
+        var querable_array = arr.copy();
+        querable_array.push(possibleBuffer);
+        var res:Null<String> = null;
+        for (it in pos...querable_array.length) {
+            var possible = querable_array[it];
+            //if (querable_array[pos].indexOf(query) != -1) return querable_array[pos];
+            if (possible.indexOf(query) != -1){ //is substring?
+                pos = it;
+                res = possible;
+                }
+        }
+        return res;
     }
     public function toArray():Array<String> {
         return arr.copy();
     }
-
-
 }

@@ -6,7 +6,7 @@ interface ITerminal {
     public function print(msg:String):Void;
     public function printNL():Void; // The creation of a new line
     public function println(msg:String):Void; // Prints msg and newline
-    public function getAction():Actions;
+    public function getAction(?AllowEscapeChars:Bool=true):Actions;
     public function clean():Void; // clean && moe cursor to 0,0
     public function bell():Void;
     public function up():Void;

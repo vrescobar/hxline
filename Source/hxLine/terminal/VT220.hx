@@ -20,6 +20,8 @@ class VT220 implements ITerminal {
              "[4]" => Eof,
              "[3]" => Cancel, // c-C
              "[9]" => Autocomplete, // Tab
+             "[18]" => BackwardSearch, // c-R
+             "[19]" => ForwardSearch, // c-R
              "[5]" => CursorEnd,
              "[21]" => KillLeft,
              "[11]" => KillRight,
@@ -34,14 +36,16 @@ class VT220 implements ITerminal {
     public function print(msg:String):Void this._print(msg);
     public function printNL():Void this.print("\n");
     public function println(msg:String):Void { this.print(msg); this.printNL(); }
-    public function getAction():Actions return this.translate(this.readKeyStroke());
+    public function getAction(?AllowEscapeChars:Bool=true):Actions {
+        return this.translate(this.readKeyStroke(AllowEscapeChars));
+    }
 
     private inline function translate(k:KeyStroke):Actions {
          return if (!conversionTable.exists(k.toString())) NewChar(String.fromCharCode(k[0]));
          else conversionTable.get(k.toString());
     }
 
-    private inline function readKeyStroke(?AllowEscapeChars:Bool=true):KeyStroke {
+    private inline function readKeyStroke(AllowEscapeChars:Bool):KeyStroke {
         var captured:Array<Int> = [];
         while (true) {
             captured.push(this.readChar());

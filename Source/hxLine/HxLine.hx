@@ -90,8 +90,6 @@ class HxLine {
                 case CursorRight if (current_status.cursorPos == current_status.buffer.length): { options.notAllowed(); continue;}
                 default: true; //pass
             }
-            // We keep in the history the current edition
-            //options.history.addEntry(current_status.buffer);
 
             // Here comes the logic update of the terminal
             current_status = switch(action) {
@@ -110,7 +108,9 @@ class HxLine {
                 case Autocomplete: autocompletion(previous_status, options);
                 case CursorUp: TerminalLogic.history_prev(previous_status, options.history);
                 case CursorDown: TerminalLogic.history_next(previous_status, options.history);
-                // Type system: those are in the previous switch and I am forgot none
+                case BackwardSearch: history_loop(previous_status, options, false);
+                case ForwardSearch: history_loop(previous_status, options, true);
+                // Type system: those are already in the previous switch. I forgot none.
                 case Eof|Escape|Ignore|Enter|Clean|Bell: previous_status;
                 };
 
@@ -130,7 +130,83 @@ class HxLine {
                     state.cursorPos = state.buffer.length;
                 }
         }
-
         return state;
+    }
+    static public function history_loop(original_status:HxLineState, options:HxLineOptions, forward:Bool) {
+        /*
+        Side effect history-query and query-interface and re-renderer. The goal is to end the terminal
+        drawn as we found it and return the queary of the user.
+        */
+        var previous_status = original_status.copy();
+        var isForward = forward;
+        var query = "";
+        var current_status:HxLineState =  {
+                      prompt: if (isForward) '(i-search)`\': ' else '(reverse-i-search)`\': ',
+                      buffer: "",
+                      cursorPos:0,
+                      yanked:"",
+                    };
+        // I need this rerender the prompto to show the query interface
+        options.terminal.render_status(previous_status, current_status);
+        var last_drawn = current_status;
+
+        while (true) {
+            /*
+            invariant:
+                previous_status: previous status (not shown)
+                current_status: same as previous, but it will get the update
+                last_drawn: latest drawn status on screen
+                query: query by user against history (possible match)
+                isForward: direction of query
+            */
+            previous_status = current_status;
+            var action:Actions = options.terminal.getAction(false);
+            switch (action) {
+                case Enter: {
+                    current_status = original_status.copy();
+                    current_status.buffer = query; // rescued value
+                    break;
+                };
+                case Cancel|Eof|Escape: {
+                    options.terminal.printNL(); // print the evidence
+                    current_status = original_status;
+                    break;
+                };
+                case Clean if (options.allowClean && options.echoes): options.terminal.clean();
+                case Bell: { options.terminal.bell(); continue; } // explicitly requested
+                case BackwardSearch: { isForward = false; }
+                case ForwardSearch:  { isForward = true; }
+                default: true;
+            }
+            current_status = switch(action) {
+                case NewChar(char): TerminalLogic.addChar(char, previous_status);
+                case Backspace: TerminalLogic.backspace(previous_status);
+                default: previous_status;
+            }
+            // re-query with the new status
+            var new_query = if(isForward) options.history.forwardQuery(current_status.buffer)
+                            else options.history.backwardQuery(current_status.buffer);
+            query = if (new_query == null) {
+                options.terminal.bell();
+                current_status = previous_status; // don't get new chars, etc
+                query;
+            } else new_query;
+
+            // what we paint in the screen is NOT the status but the history-query interface
+            var next_drawn = {
+                          prompt: if (isForward) '(i-search)`${current_status.buffer}\': '
+                                  else '(reverse-i-search)`${current_status.buffer}\': ',
+                          buffer: query,
+                          cursorPos:0,
+                          yanked:"",
+                      };
+            options.terminal.render_status(last_drawn, next_drawn);
+            last_drawn = next_drawn;
+        }
+        current_status.prompt = original_status.prompt;
+        current_status.cursorPos = current_status.buffer.length;
+        // Let it painted as it was before we got in
+        options.terminal.render_status(last_drawn, original_status);
+        return current_status;
     }
 }

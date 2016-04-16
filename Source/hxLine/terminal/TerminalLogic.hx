@@ -118,4 +118,5 @@ class TerminalLogic {
         s2.cursorPos = s2.buffer.length;
         return s2;
     }
+
 }
