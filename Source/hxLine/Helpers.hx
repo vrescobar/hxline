@@ -14,6 +14,9 @@ class Helpers {
         }
         return p;
     }
+    public static inline function contains(s:String, query:String): Bool {
+        return s.indexOf(query) != -1;
+    }
     public static inline function detectTerminal(): ITerminal {
         /**
         Discovers the terminal which you are using in the current system and returns you the instance

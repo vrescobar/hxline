@@ -1,6 +1,7 @@
 
 package hxLine.history;
 import hxLine.history.IHistory;
+using hxLine.Helpers;
 
 class BasicHistory implements IHistory {
     public var max_length:Null<Int>=null;
@@ -48,15 +49,18 @@ class BasicHistory implements IHistory {
         var c = if (pos == arr.length) this.possibleBuffer else arr[pos];
         return c;
     }
-    public function backwardQuery(query:String):Null<String> {
+    public function backwardQuery(query:String, skip_current:Bool):Null<String> {
+        /* Performs a backwards query discover the first matching history entry containing query.
+        If skip_current is set false, the query will search also in the current position.
+        */
         var querable_array = arr.copy();
         querable_array.push(possibleBuffer);
         var res:Null<String> = null;
         var it = pos;
-        //if (querable_array[pos].indexOf(query) != -1) return querable_array[pos];
-        while (--it >= 0) { //Range operator can't iterate backwards
+        if (!skip_current && querable_array[pos].contains(query)) return querable_array[pos];
+        while (--it >= 0) { //why range operator can't iterate backwards?
             var possible = querable_array[it];
-            if (possible.indexOf(query) != -1){ //is substring?
+            if (possible.contains(query)){
                 pos = it;
                 return possible;
                 }
@@ -64,14 +68,17 @@ class BasicHistory implements IHistory {
         return res;
     }
 
-    public function forwardQuery(query:String):Null<String> {
+    public function forwardQuery(query:String, skip_current:Bool):Null<String> {
+        /* Performs a forwards query discover the first matching history entry containing query.
+        If skip_current is set false, the query will search also in the current position.
+        */
         var querable_array = arr.copy();
         querable_array.push(possibleBuffer);
         var res:Null<String> = null;
         for (it in pos...querable_array.length) {
             var possible = querable_array[it];
-            //if (querable_array[pos].indexOf(query) != -1) return querable_array[pos];
-            if (possible.indexOf(query) != -1){ //is substring?
+            if (!skip_current && querable_array[pos].contains(query)) return querable_array[pos];
+            if (possible.contains(query)){
                 pos = it;
                 res = possible;
                 }
