@@ -4,7 +4,7 @@ BUILD = build
 all: clean example
 
 example:
-	haxe build.hxml
+	haxe examples.hxml
 
 clean:
 	rm -rf $(BUILD)

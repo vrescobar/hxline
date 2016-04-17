@@ -33,7 +33,7 @@ typedef HxLineOptions = {
 
 class HxLine {
     public var options:HxLineOptions; // easy serialization
-    public function new(terminal:ITerminal, ?history:IHistory, ?autocompleter:String -> Array<String>) {
+    public function new(terminal:ITerminal, ?autocompleter:String -> Array<String>, ?history:IHistory) {
         this.options = { terminal: terminal,
                          activeBell: true,
                          echoes: true,
@@ -64,10 +64,10 @@ class HxLine {
         /* hxReadline with several options as input parameter */
 
         // Optional options with their defaults:
-        if (!Reflect.hasField(options, "prompt")) options.prompt = "HxLine>";
-        if (!Reflect.hasField(options, "notAllowed")) options.notAllowed = function() if (options.activeBell) options.terminal.bell();
-        if (!Reflect.hasField(options, "autocompleter")||options.autocompleter == null) options.autocompleter = function(s:String){return [s];};
-        if (!Reflect.hasField(options, "history")||options.history == null) options.history = new BasicHistory();
+        if (!Reflect.hasField(options, "prompt")) this.options.prompt = "HxLine>";
+        if (!Reflect.hasField(options, "notAllowed")) options.notAllowed = function() if (options.activeBell) this.options.terminal.bell();
+        if (!Reflect.hasField(options, "autocompleter")||options.autocompleter == null) this.options.autocompleter = function(s:String){return [s];};
+        if (!Reflect.hasField(options, "history")||options.history == null) this.options.history = new BasicHistory();
 
         var logStatus = if (Reflect.hasField(options, "logStatus")) options.logStatus else function(l:HxLineState){};
         // Initialize and start looping

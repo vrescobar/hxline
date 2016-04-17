@@ -1,0 +1,25 @@
+-cp Source
+-cp Source/test
+-dce full
+-debug
+--no-inline
+-main Main
+-neko build/tests.n
+--next
+-cmd neko build/tests.n
+
+--next
+
+-cp Source
+-cp Examples
+-dce full
+-main ComplexExample
+-neko build/ComplexExample.n
+
+--next
+
+-cp Source
+-cp Examples
+-dce full
+-main EasyExample
+-neko build/EasyExample.n

@@ -8,7 +8,7 @@ import hxLine.history.TextHistory;
 import hxLine.history.IHistory;
 
 // Let's try to create a beautyful command line!
-class Main {
+class ComplexExample {
 
     static private var help = 'Type "quit" to exit';
     static function main() {
@@ -22,7 +22,7 @@ class Main {
         terminal.println(help);
 
         // Initialize the readline reader, passing it a terminal and the autocompleter
-        var rl = new HxLine(terminal, history, autocompleter);
+        var rl = new HxLine(terminal, autocompleter, history);
 
         while(true) {
             // Read a line with the given prompt
@@ -71,6 +71,7 @@ class Main {
         terminal.println("here comes your password: " + pass);
     }
     static inline function readchars(print:String -> Void, getChar:Bool -> Int): Void {
+        // Little embedded program which prints char codes of the pressed keys.
         print("Ends when pressing [ENTER]: ");
         var char = getChar(false);
         print("" + char);
