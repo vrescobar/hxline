@@ -38,7 +38,7 @@ class HxLine {
                          activeBell: true,
                          echoes: true,
                          allowClean: true,
-                         history: history,
+                         history: if (history != null) history else new BasicHistory(),
                          autocompleter: autocompleter,
                         };
 
@@ -64,10 +64,9 @@ class HxLine {
         /* hxReadline with several options as input parameter */
 
         // Optional options with their defaults:
-        if (!Reflect.hasField(options, "prompt")) this.options.prompt = "HxLine>";
-        if (!Reflect.hasField(options, "notAllowed")) options.notAllowed = function() if (options.activeBell) this.options.terminal.bell();
-        if (!Reflect.hasField(options, "autocompleter")||options.autocompleter == null) this.options.autocompleter = function(s:String){return [s];};
-        if (!Reflect.hasField(options, "history")||options.history == null) this.options.history = new BasicHistory();
+        if (!Reflect.hasField(options, "prompt")) options.prompt = "HxLine>";
+        if (!Reflect.hasField(options, "notAllowed")) options.notAllowed = function() if (options.activeBell) options.terminal.bell();
+        if (!Reflect.hasField(options, "autocompleter")||options.autocompleter == null) options.autocompleter = function(s:String){return [s];};
 
         var logStatus = if (Reflect.hasField(options, "logStatus")) options.logStatus else function(l:HxLineState){};
         // Initialize and start looping
@@ -121,15 +120,15 @@ class HxLine {
     }
     private inline static function autocompletion(prev_state:HxLineState, options:HxLineOptions):HxLineState {
         var alternatives = options.autocompleter(prev_state.buffer);
-        var state = prev_state.copy();
-        switch(alternatives.length) {
-            case 0: options.terminal.bell();
-            case 1: {
-                    state.buffer = alternatives[0];
+        return if (alternatives.length == 0) {
+                    options.terminal.bell();
+                    prev_state;
+                } else {
+                    var state = prev_state.copy();
+                    state.buffer = Helpers.maximum_common_substring(state.buffer, alternatives);
                     state.cursorPos = state.buffer.length;
-                }
-        }
-        return state;
+                    state;
+                };
     }
     static public function history_loop(original_status:HxLineState, options:HxLineOptions, forward:Bool) {
         /*

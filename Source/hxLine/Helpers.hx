@@ -1,18 +1,36 @@
 package hxLine;
 
 using StringTools;
+using Lambda;
 import hxLine.terminal.*;
 /***
 Various helpers which are better tested and distributed when separated.
 ***/
 class Helpers {
-    public inline static function last_equal(it:String, it2:String):Int {
+    public inline static function last_equal_char(it:String, it2:String):Int {
+        /* the nth last minimum common char of between two strings*/
         var p:Int = 0;
         for( pos in 0...Std.int(Math.min(it.length, it2.length))) {
             if (it.charAt(pos) != it2.charAt(pos)) break;
             p = pos;
         }
         return p;
+    }
+
+    public inline static function maximum_common_substring(subset:String, strings:Array<String>):String {
+        var mcss_pos:Null<Int> = null;
+        var prev:Null<String> = null;
+        for(s in strings) {
+                if (mcss_pos == null) {
+                    mcss_pos = s.length;
+                    prev = s;
+                    continue;
+                }
+                var le = last_equal_char(prev, s);
+                mcss_pos = Std.int(Math.min(mcss_pos, le));
+            }
+        var mcss = strings[0].substring(0, mcss_pos + 1);
+        return if (mcss_pos == null||mcss_pos == 0) subset else mcss;
     }
     public static inline function contains(s:String, query:String): Bool {
         return s.indexOf(query) != -1;

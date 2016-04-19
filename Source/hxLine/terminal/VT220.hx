@@ -72,8 +72,8 @@ class VT220 implements ITerminal {
     }
     public function render_status(previous_status:HxLineState, current_status:HxLineState): Void {
             /* Redraw the whole line *each time* (with little or no optimizations) */
-            var leq = Helpers.last_equal(previous_status.prompt + previous_status.buffer,
-                                         current_status.prompt + current_status.buffer);
+            var leq = Helpers.last_equal_char(previous_status.prompt + previous_status.buffer,
+                                              current_status.prompt + current_status.buffer);
             var max_length = Std.int(Math.max(current_status.prompt.length + current_status.buffer.length,
                                               previous_status.prompt.length + previous_status.buffer.length));
             this.left(max_length);

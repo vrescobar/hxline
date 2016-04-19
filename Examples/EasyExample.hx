@@ -11,7 +11,7 @@ class EasyExample {
         while(true) {
             // Read a line with the given prompt
             var line:String = rl.readline("greet-CLI $ ");
-            if (line == "quit" || line.charCodeAt(0) == 0x0) break;
+            if (line == "quit" || line.charCodeAt(0) == 0x0) break; // End of line
             if (line.length == 0) continue;
             if (line == "helloWorld") {
                 terminal.println("你好!");
