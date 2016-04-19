@@ -24,11 +24,11 @@ typedef HxLineOptions = {
                             var echoes:Bool; // when deactivated, clean can't work
                             var allowClean:Bool;
                             var terminal:ITerminal;
+                            var history:IHistory;
                             @:optional var autocompleter:String -> Array<String>;
                             @:optional var logStatus:Dynamic; // Function where the state comes as firts paramenter
                             @:optional var prompt:String;
                             @:optional var notAllowed:Void -> Void;
-                            @:optional var history:IHistory;
                         }
 
 class HxLine {
